@@ -23,21 +23,44 @@ The output is a single code block you can copy straight into your terminal.
 
 ```
 commit-suggester-skill/
-├── SKILL.md    The full skill (rules, type table, examples, edge cases)
-└── README.md   You're reading it
+├── SKILL.md       The skill entry point (when to trigger, output format, type picking)
+├── REFERENCE.md   Full type table, scope rules, subject-line rules, body/footer guidance
+├── EXAMPLES.md    Five worked examples plus edge cases
+└── README.md      You're reading it
 ```
 
-No bundled resources, no scripts. It's a single self contained skill file.
+The skill uses progressive disclosure: `SKILL.md` stays small and always in context, while `REFERENCE.md` and `EXAMPLES.md` are loaded only when Claude needs the deeper detail.
 
 ## How to install
 
-Drop the `SKILL.md` into your Claude skills directory inside a folder named `commit-suggester`:
+The skill is three files (`SKILL.md`, `REFERENCE.md`, `EXAMPLES.md`) that all need to live together in a folder named `commit-suggester` inside your Claude skills directory.
+
+### Option 1: clone the repo
+
+```bash
+git clone https://github.com/<your-username>/commit-suggester-skill.git
+cp -r commit-suggester-skill ~/.claude/skills/commit-suggester
+```
+
+(On Linux/macOS. On Windows the path is `%USERPROFILE%\.claude\skills\commit-suggester`.)
+
+### Option 2: download the three files manually
+
+Create the folder, then drop the files into it:
 
 ```
-/mnt/skills/user/commit-suggester/SKILL.md
+~/.claude/skills/
+└── commit-suggester/
+    ├── SKILL.md
+    ├── REFERENCE.md
+    └── EXAMPLES.md
 ```
 
-Claude will pick it up automatically on the next conversation.
+You don't need to copy `README.md` into the skills folder. It's only here on GitHub.
+
+### Verify it loaded
+
+Start a new Claude Code session and ask it to make any small code change. At the end of the response you should see a `### 📝 Suggested commit` block with a ready to paste `git commit -m` command. If you don't, double check that the folder is named exactly `commit-suggester` (not `commit-suggester-skill`) and that all three `.md` files sit directly inside it.
 
 ## How to use
 
@@ -65,7 +88,7 @@ At the end of a normal Claude response, you'll see:
 git commit -m "feat(settings): add dark mode toggle"
 ```
 
-Adds a new user facing capability in the settings module, so `feat` with `settings` scope.
+Chosen `feat(settings)` because it's a new user facing capability in the settings module.
 ````
 
 For commits that need a body or footer, it uses the multi `-m` form so it stays copy pasteable:
@@ -86,6 +109,8 @@ git add README.md
 git commit -m "docs(readme): update setup steps for Node 20"
 ```
 
+See `EXAMPLES.md` for five fully worked scenarios including breaking changes, multi commit splits, refactors, and edge cases.
+
 ## How the type gets picked
 
 The skill uses signals in this order of strength:
@@ -95,7 +120,7 @@ The skill uses signals in this order of strength:
 3. **What changed in the code**: new exported function → likely `feat`; null check fix → likely `fix`; same behavior, different structure → `refactor`
 4. **Breaking changes**: any incompatible change to a public API, CLI flag, or env var gets `!` in the subject and a `BREAKING CHANGE:` footer
 
-When signals disagree, the stated goal wins over file based heuristics.
+When signals disagree, the stated goal wins over file based heuristics. Full rules are in `REFERENCE.md`.
 
 ## Tips for best results
 
